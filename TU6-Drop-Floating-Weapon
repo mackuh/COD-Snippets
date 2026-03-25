@@ -1,4 +1,4 @@
-            void Action_DropCurrentWeaponNoGravity()
+            void DropCurrentWeaponNoGravity()
             {
                 game::playerState_s* ps = game::GetLocalPlayerState();
                 if (!ps) return;
