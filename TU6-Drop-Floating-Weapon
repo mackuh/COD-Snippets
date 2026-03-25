@@ -1,54 +1,28 @@
-void DropCurrentWeaponNoGravity()
-{
-    game::playerState_s* ps = game::GetLocalPlayerState();
-    if (!ps) return;
+            void Action_DropCurrentWeaponNoGravity()
+            {
+                game::playerState_s* ps = game::GetLocalPlayerState();
+                if (!ps) return;
+                unsigned int weapIdx = ps->currentWeapon;
+                if (!weapIdx) return;
 
-    unsigned int weapIdx = ps->currentWeapon;
-    if (!weapIdx) return;
+                game::gentity_s* ent = &game::g_entities[0];
+                if (!ent->client) return;
 
-    game::gentity_s* ent = &game::g_entities[0];
-    if (!ent->client) return;
+                DWORD* wd = GetWeaponDef(weapIdx);
+                if (!wd || *(int*)((char*)wd + 56) == 3) return;
 
-    DWORD* wd = GetWeaponDef(weapIdx);
-    if (!wd || *(int*)((char*)wd + 56) == 3) return; // offset 56 = weaponType (3 = melee, skip drop)
+                unsigned char    weaponModel = BG_GetWeaponModel_fn(&ent->client->ps, weapIdx);
+                int              itemIndex = (int)weaponModel * 1400 + (int)weapIdx;
+                game::gentity_s* dropped = LaunchItem_fn(itemIndex, *(int*)((char*)ent));
+                if (!dropped) return;
 
-    unsigned char weaponModel = BG_GetWeaponModel_fn(&ent->client->ps, weapIdx);
-    int itemIndex   = (int)weaponModel * 1400 + (int)weapIdx;
-    game::gentity_s* dropped = LaunchItem_fn(itemIndex, *(int*)((char*)ent));
-    if (!dropped) return;
+                TransferPlayerAmmoToWeaponEntity_fn(ent, dropped, weapIdx);
+                G_TakePlayerWeapon_fn(&ent->client->ps, weapIdx);
 
-    TransferPlayerAmmoToWeaponEntity_fn(ent, dropped, weapIdx);
-    G_TakePlayerWeapon_fn(&ent->client->ps, weapIdx);
+                float origin[3] = { ps->origin[0], ps->origin[1], ps->origin[2] + 20.f };
+                G_SetOrigin_fn(dropped, origin);
 
-    float origin[3] = {
-        ps->origin[0],
-        ps->origin[1],
-        ps->origin[2] + 20.f // Drops at your head , you can go prone to drop it on floor or adjest it if u wish too
-    };
 
-    G_SetOrigin_fn(dropped, origin);
-
-    // gentity_s origin (r.currentOrigin)
-    *(float*)((char*)dropped + 24) = origin[0]; // offset 24 = currentOrigin[0]
-    *(float*)((char*)dropped + 28) = origin[1]; // offset 28 = currentOrigin[1]
-    *(float*)((char*)dropped + 32) = origin[2]; // offset 32 = currentOrigin[2]
-
-    // Zero out angles (r.currentAngles)
-    *(int*)((char*)dropped + 12)   = 0;        
-
-    // Zero out velocity so item doesn't fly off
-    *(float*)((char*)dropped + 36) = 0.f;    
-    *(float*)((char*)dropped + 40) = 0.f;      
-    *(float*)((char*)dropped + 44) = 0.f;    
-
-    // Zero out solid/physics flags
-    *(int*)((char*)dropped + 16)   = 0;        
-    *(int*)((char*)dropped + 20)   = 0;     
-
-    // Entity flags / state
-    *(int*)((char*)dropped + 132)  = 2047;      
-    *(int*)((char*)dropped + 384) |= 1;        
-    *(char*)((char*)dropped + 364) = 1;      
-
-    SV_LinkEntity_fn(dropped);
-}
+                dropped->spawnflags |= 1; 
+                SV_LinkEntity_fn(dropped);
+            }
