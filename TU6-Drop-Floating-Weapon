@@ -12,19 +12,18 @@ void DropCurrentWeaponNoGravity()
     DWORD* wd = GetWeaponDef(weapIdx);
     if (!wd || *(int*)((char*)wd + 56) == 3) return; // offset 56 = weaponType (3 = melee, skip drop)
 
-    unsigned char    weaponModel = BG_GetWeaponModel_fn(&ent->client->ps, weapIdx);
-    int              itemIndex   = (int)weaponModel * 1400 + (int)weapIdx;
-    game::gentity_s* dropped     = LaunchItem_fn(itemIndex, *(int*)((char*)ent));
+    unsigned char weaponModel = BG_GetWeaponModel_fn(&ent->client->ps, weapIdx);
+    int itemIndex   = (int)weaponModel * 1400 + (int)weapIdx;
+    game::gentity_s* dropped = LaunchItem_fn(itemIndex, *(int*)((char*)ent));
     if (!dropped) return;
 
     TransferPlayerAmmoToWeaponEntity_fn(ent, dropped, weapIdx);
     G_TakePlayerWeapon_fn(&ent->client->ps, weapIdx);
 
-    // Spawn slightly above player to avoid floor clipping
     float origin[3] = {
         ps->origin[0],
         ps->origin[1],
-        ps->origin[2] + 20.f
+        ps->origin[2] + 20.f // drops where your camera is , so u can go prone if u want it on the floor 
     };
 
     G_SetOrigin_fn(dropped, origin);
