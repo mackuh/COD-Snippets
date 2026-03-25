@@ -1,0 +1,28 @@
+    //pretty self explainitory , just never see anyone do it even tho every menu nowadays uses a c++ plugin
+
+    MAKE_DETOUR(PM_Weapon_CheckForMelee, 0x82110540)
+    void PM_Weapon_CheckForMelee_Hook(game::pmove_t* pm, game::pml_t* pml, int delayedAction, unsigned int* holdrand)
+    {
+        if (MenuEngine::IsOpen())
+            return;
+
+        pPM_Weapon_CheckForMeleeDetour->GetOriginal<void(*)(game::pmove_t*, game::pml_t*, int, unsigned int*)>()(pm, pml, delayedAction, holdrand);
+    }
+
+    MAKE_DETOUR(PM_Weapon_CheckForReload, 0x82111D68)
+    void PM_Weapon_CheckForReload_Hook(game::pmove_t* pm, unsigned int* holdrand)
+    {
+        if (MenuEngine::IsOpen())
+            return;
+
+        pPM_Weapon_CheckForReloadDetour->GetOriginal<void(*)(game::pmove_t*, unsigned int*)>()(pm, holdrand);
+    }
+
+    MAKE_DETOUR(CG_ActionSlotDown, 0x8216C0D8)
+    void CG_ActionSlotDown_Hook()
+    {
+        if (MenuEngine::IsOpen())
+            return;
+
+        pCG_ActionSlotDownDetour->GetOriginal<void(*)()>()();
+    }
