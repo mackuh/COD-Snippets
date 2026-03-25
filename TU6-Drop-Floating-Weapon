@@ -23,7 +23,7 @@ void DropCurrentWeaponNoGravity()
     float origin[3] = {
         ps->origin[0],
         ps->origin[1],
-        ps->origin[2] + 20.f // drops where your camera is , so u can go prone if u want it on the floor 
+        ps->origin[2] + 20.f // Drops at your head , you can go prone to drop it on floor or adjest it if u wish too
     };
 
     G_SetOrigin_fn(dropped, origin);
