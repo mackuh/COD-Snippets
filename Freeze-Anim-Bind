@@ -1,0 +1,12 @@
+    MAKE_DETOUR(CG_UpdateViewWeaponAnim, 0x82167A80)
+
+    bool ShouldFreezeAnim = false;
+    void CG_UpdateViewWeaponAnim_Hook(int localClientNum)
+    {
+        if (ShouldFreezeAnim)
+            return;
+
+		        pCG_UpdateViewWeaponAnimDetour->GetOriginal<void(*)(int)>()(localClientNum);
+    }
+
+// make a bind to toggle ShouldFreezeAnim 
